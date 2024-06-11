@@ -10,20 +10,21 @@ public class CacheTest implements ICacheTest {
   private int nonCachedCount = 0;
 
   @Override
-  @Cache(100)
-  public void cachedMethod() {
+  @Cache(1000)
+  public String cachedMethod() {
     cachedCount++;
+    return "string";
   }
 
   @Override
-  @Cache(100)
+  @Cache(1000)
   public int cachedMethod(int i) {
     cachedCount++;
     return i;
   }
 
   @Override
-  @Cache(100)
+  @Cache(1000)
   public double cachedMethod(double d) {
     cachedCount++;
     return d;

@@ -80,11 +80,15 @@ public class AppTest {
     ICacheTest cacheTest = Util.cache(ct);
     cacheTest.cachedMethod();
     assertEquals(1, ct.getCachedCount());
+    cacheTest.cachedMethod();
     assertEquals(1, ct.getCachedCount());
-    Thread.sleep(50);
+    Thread.sleep(500);
+    cacheTest.cachedMethod();
     assertEquals(1, ct.getCachedCount());
-    Thread.sleep(50);
+    Thread.sleep(1000);
+    cacheTest.cachedMethod();
     assertEquals(2, ct.getCachedCount());
+    cacheTest.cachedMethod();
     assertEquals(2, ct.getCachedCount());
   }
 }

@@ -1,7 +1,7 @@
 package org.learn.curs03;
 
 public interface ICacheTest {
-  void cachedMethod();
+  String cachedMethod();
 
   int cachedMethod(int i);
 
