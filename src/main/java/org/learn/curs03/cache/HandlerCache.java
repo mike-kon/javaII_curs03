@@ -17,7 +17,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 public class HandlerCache<T> implements InvocationHandler {
   private final Map<Method, CacheData> cacheDataMap;
   private final T obj;
-  private boolean work=true;
+  private boolean work = true;
   private final long waitTime = 50;
 
   public HandlerCache(T obj) {
@@ -48,17 +48,17 @@ public class HandlerCache<T> implements InvocationHandler {
   private Object getCash(Method method, Object[] args, long cacheLive) throws InvocationTargetException, IllegalAccessException {
     if (cacheDataMap.containsKey(method)) {
       CacheData cacheData = cacheDataMap.get(method);
-      cacheData.deathTime.plus(cacheLive,MILLIS);
+      cacheData.deathTime.plus(cacheLive, MILLIS);
       return cacheData.data;
     }
     Object result = method.invoke(obj, args);
-    LocalDateTime death = LocalDateTime.now().plus(cacheLive,MILLIS);
+    LocalDateTime death = LocalDateTime.now().plus(cacheLive, MILLIS);
     cacheDataMap.put(method, new CacheData(result, death));
     return result;
   }
 
-  private void cacheLiveControl(){
-    while (work){
+  private void cacheLiveControl() {
+    while (work) {
       cacheLiveControlItem();
       try {
         Thread.sleep(waitTime);
@@ -68,13 +68,10 @@ public class HandlerCache<T> implements InvocationHandler {
     }
   }
 
-  private void cacheLiveControlItem(){
-    List<Method> removes = new ArrayList<>();
-    cacheDataMap.forEach((key, value) -> {
-      if (value.deathTime.isBefore(LocalDateTime.now())){
-        removes.add(key);
-      }
-    });
+  private void cacheLiveControlItem() {
+    List<Method> removes = cacheDataMap.entrySet().stream()
+            .filter(x -> x.getValue().deathTime.isBefore(LocalDateTime.now()))
+            .map(x -> x.getKey()).toList();
     if (!removes.isEmpty()) {
       synchronized (cacheDataMap) {
         removes.forEach(k -> cacheDataMap.remove(k));
