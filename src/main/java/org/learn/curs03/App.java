@@ -26,5 +26,6 @@ public class App
         Thread.sleep(1100);
         d = num.doubleValue();
         System.out.printf("6: %1.2f%n", d);
+        Util.shutdown();
     }
 }

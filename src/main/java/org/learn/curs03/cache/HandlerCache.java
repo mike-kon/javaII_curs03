@@ -6,8 +6,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +16,11 @@ public class HandlerCache<T> implements InvocationHandler {
   private final Map<Method, CacheData> cacheDataMap;
   private final T obj;
   private boolean work = true;
-  private final long waitTime = 50;
 
   public HandlerCache(T obj) {
     this.obj = obj;
     cacheDataMap = new HashMap<>();
-    Thread liveControl = new Thread(() -> cacheLiveControl());
+    Thread liveControl = new Thread(this::cacheLiveControl);
     liveControl.start();
   }
 
@@ -48,7 +45,7 @@ public class HandlerCache<T> implements InvocationHandler {
   private Object getCash(Method method, Object[] args, long cacheLive) throws InvocationTargetException, IllegalAccessException {
     if (cacheDataMap.containsKey(method)) {
       CacheData cacheData = cacheDataMap.get(method);
-      cacheData.deathTime.plus(cacheLive, MILLIS);
+      cacheData.deathTime = cacheData.deathTime.plus(cacheLive, MILLIS);
       return cacheData.data;
     }
     Object result = method.invoke(obj, args);
@@ -61,6 +58,7 @@ public class HandlerCache<T> implements InvocationHandler {
     while (work) {
       cacheLiveControlItem();
       try {
+        long waitTime = 50;
         Thread.sleep(waitTime);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
@@ -71,18 +69,16 @@ public class HandlerCache<T> implements InvocationHandler {
   private void cacheLiveControlItem() {
     List<Method> removes = cacheDataMap.entrySet().stream()
             .filter(x -> x.getValue().deathTime.isBefore(LocalDateTime.now()))
-            .map(x -> x.getKey()).toList();
+            .map(Map.Entry::getKey).toList();
     if (!removes.isEmpty()) {
       synchronized (cacheDataMap) {
-        removes.forEach(k -> cacheDataMap.remove(k));
+        removes.forEach(cacheDataMap::remove);
       }
     }
   }
 
-  @Override
-  protected void finalize() throws Throwable {
+  public void shutdown(){
     work = false;
-    super.finalize();
   }
 
   @AllArgsConstructor
