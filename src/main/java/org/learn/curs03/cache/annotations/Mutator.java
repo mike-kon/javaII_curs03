@@ -1,4 +1,4 @@
-package org.learn.curs03.cache;
+package org.learn.curs03.cache.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Cache {
-  long value();
+public @interface Mutator {
 }

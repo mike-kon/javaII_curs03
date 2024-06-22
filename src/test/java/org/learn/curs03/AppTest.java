@@ -1,94 +1,68 @@
 package org.learn.curs03;
 
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.learn.curs03.cache.Util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AppTest {
-  @Test
-  public void runCachTest() {
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    assertEquals(0,ct.getCachedCount());
-    cacheTest.cachedMethod();
-    assertEquals(1,ct.getCachedCount());
-    cacheTest.cachedMethod();
-    cacheTest.cachedMethod();
-    cacheTest.cachedMethod();
-    cacheTest.cachedMethod();
-    assertEquals(1,ct.getCachedCount());
+
+  @AfterAll
+  public static void stop() {
+    Util.shutdown();
   }
 
   @Test
-  public void runCachIntTest() {
-    final int i = 10;
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    assertEquals(0,ct.getCachedCount());
-    int ii = cacheTest.cachedMethod(i);
-    assertEquals(i, ii);
-    assertEquals(1,ct.getCachedCount());
-    ii = cacheTest.cachedMethod(i);
-    assertEquals(i, ii);
-    assertEquals(1,ct.getCachedCount());
+  public void PutCacheOneValue() throws Exception {
+    ITestCache test = Util.getCache(new TestCache());
+    test.setValue(100);
+    int value = test.getValue();
+    int count = test.getCount();
+    Assertions.assertEquals(100, value);
+    Assertions.assertEquals(1, count);
+    value = test.getValue();
+    count = test.getCount();
+    Assertions.assertEquals(100, value);
+    Assertions.assertEquals(1, count);
   }
 
   @Test
-  public void runCachDoubleTest() {
-    final double d = 12.25;
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    assertEquals(0,ct.getCachedCount());
-    double dd = cacheTest.cachedMethod(d);
-    assertEquals(d, dd);
-    assertEquals(1,ct.getCachedCount());
-    dd = cacheTest.cachedMethod(d);
-    assertEquals(d, dd);
-    assertEquals(1,ct.getCachedCount());
-  }
-
-
-  @Test
-  public void runMutatorTest() {
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    assertEquals(0,ct.getCachedCount());
-    cacheTest.cachedMethod();
-    cacheTest.cachedMethod();
-    assertEquals(1,ct.getCachedCount());
-    cacheTest.mutatorMethod();
-    cacheTest.cachedMethod();
-    assertEquals(2,ct.getCachedCount());
+  public void PutCacheManyValue() throws Exception {
+    ITestCache test = Util.getCache(new TestCache());
+    test.setValue(100);
+    Assertions.assertEquals(100, test.getValue());
+    Assertions.assertEquals(1, test.getCount());
+    Assertions.assertEquals(100, test.getValue());
+    Assertions.assertEquals(1, test.getCount());
+    test.setValue(200);
+    Assertions.assertEquals(200, test.getValue());
+    Assertions.assertEquals(2, test.getCount());
+    Assertions.assertEquals(200, test.getValue());
+    Assertions.assertEquals(2, test.getCount());
+    test.setValue(100);
+    Assertions.assertEquals(100, test.getValue());
+    Assertions.assertEquals(3, test.getCount());
+    Assertions.assertEquals(100, test.getValue());
+    Assertions.assertEquals(3, test.getCount());
   }
 
   @Test
-  public void nonCachedTest(){
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    assertEquals(0, ct.getNonCachedCount());
-    cacheTest.nonCachedMethod();
-    assertEquals(1, ct.getNonCachedCount());
-    cacheTest.nonCachedMethod();
-    assertEquals(2, ct.getNonCachedCount());
-  }
-
-  @Test
-  public void liveTimeCached() throws InterruptedException {
-    CacheTest ct = new CacheTest();
-    ICacheTest cacheTest = Util.cache(ct);
-    cacheTest.cachedMethod();
-    assertEquals(1, ct.getCachedCount());
-    cacheTest.cachedMethod();
-    assertEquals(1, ct.getCachedCount());
-    Thread.sleep(500);
-    cacheTest.cachedMethod();
-    assertEquals(1, ct.getCachedCount());
-    Thread.sleep(1000);
-    cacheTest.cachedMethod();
-    assertEquals(2, ct.getCachedCount());
-    cacheTest.cachedMethod();
-    assertEquals(2, ct.getCachedCount());
+  public void PutCacheException() throws Exception {
+    ITestCache test = Util.getCache(new TestCache());
+    test.setException();
+    assertThrows(Exception.class, test::getValue, TestCache.ExceptionMessage);
+    assertEquals(1, test.getCount());
+    assertThrows(Exception.class, test::getValue, TestCache.ExceptionMessage);
+    assertEquals(1, test.getCount());
+    test.setValue(100);
+    Assertions.assertEquals(100, test.getValue());
+    Assertions.assertEquals(2, test.getCount());
+    test.setException();
+    assertThrows(Exception.class, test::getValue, TestCache.ExceptionMessage);
+    assertEquals(3, test.getCount());
   }
 }

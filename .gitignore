@@ -23,6 +23,7 @@ target/
 
 ### NetBeans ###
 /nbproject/private/
+
 /nbbuild/
 /dist/
 /nbdist/
@@ -36,3 +37,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+~$*
